@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billy's List App</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+</head>
+<body>
+    <!-- Authentication Section -->
+    <div id="auth-section" class="auth-container">
+        <div class="auth-card">
+            <h1>📝 Billy's List App</h1>
+            <p>Create and share your personal lists</p>
+            
+            <div id="auth-mode-selector" class="auth-mode-selector">
+                <button id="google-auth-btn" class="auth-method-btn active">
+                    <span class="btn-icon">🔑</span>
+                    Google
+                </button>
+                <button id="email-auth-btn" class="auth-method-btn">
+                    <span class="btn-icon">📧</span>
+                    Email
+                </button>
+            </div>
+
+            <!-- Google Sign-In Method -->
+            <div id="google-auth-form" class="auth-form active">
+                <button id="sign-in-google-btn" class="btn-primary">
+                    <span class="btn-icon">🔑</span>
+                    Sign in with Google
+                </button>
+            </div>
+
+            <!-- Email/Password Sign-In Method -->
+            <div id="email-auth-form" class="auth-form active">
+                <input type="email" id="email-input" placeholder="Enter your email" maxlength="100">
+                <input type="password" id="password-input" placeholder="Enter your password" maxlength="100">
+                
+                <button id="sign-in-email-btn" class="btn-primary">
+                    <span class="btn-icon">📧</span>
+                    Sign In
+                </button>
+
+                <div class="auth-toggle" style="margin-top:8px;">
+                    <p><button id="forgot-password-btn" class="link-btn">Forgot password?</button></p>
+                </div>
+                
+                <div class="auth-toggle">
+                    <p>Don't have an account? <button id="toggle-signup-btn" class="link-btn">Create one</button></p>
+                </div>
+            </div>
+
+            <!-- Email/Password Sign-Up Form -->
+            <div id="email-signup-form" class="auth-form">
+                <input type="text" id="signup-name" placeholder="Your name" maxlength="50">
+                <input type="email" id="signup-email" placeholder="Enter your email" maxlength="100">
+                <input type="password" id="signup-password" placeholder="Create a password" maxlength="100">
+                <input type="password" id="signup-confirm" placeholder="Confirm password" maxlength="100">
+                
+                <button id="sign-up-email-btn" class="btn-primary">
+                    <span class="btn-icon">✨</span>
+                    Create Account
+                </button>
+                
+                <div class="auth-toggle">
+                    <p>Already have an account? <button id="toggle-signin-btn" class="link-btn">Sign in</button></p>
+                </div>
+            </div>
+
+            <div id="auth-error" class="auth-error" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Main App Section -->
+    <div id="app-section" class="app-container" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>📝 Billy's List App</h1>
+            <div class="user-info">
+                <span id="user-name" style="display:none;"></span>
+                <button id="app-menu-btn" class="btn-secondary" aria-label="Open menu">⋯</button>
+            </div>
+            <div id="app-menu" class="app-menu" style="display: none;">
+                <div class="app-menu-content">
+                    <button id="account-profile-btn" class="menu-item menu-button">👤 Update Display Name</button>
+                    <button id="account-email-btn" class="menu-item menu-button">📧 Update Email</button>
+                    <button id="account-password-btn" class="menu-item menu-button">🔒 Update Password</button>
+                    <button id="account-sort-defaults-btn" class="menu-item menu-button">↕️ Sorting Preferences</button>
+                    <button id="theme-mode-btn" class="menu-item menu-button">🌓 Toggle Dark/Light Mode</button>
+                    <button id="sign-out-btn" class="menu-item menu-button">Sign Out</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Lists Management Section -->
+        <nav class="lists-nav">
+            <div class="lists-header">
+                <h2 id="lists-heading">My Lists</h2>
+                <button id="create-list-btn" class="btn-create">+</button>
+            </div>
+            <div id="lists-container" class="lists-tabs">
+                <!-- Dynamic list tabs will be added here -->
+            </div>
+        </nav>
+
+        <!-- Current List Display -->
+        <main class="current-list-section">
+            <!-- No List Selected State -->
+            <div id="no-list-selected" class="no-list-state">
+                <div class="empty-state">
+                    <h3>👋 Welcome to Billy's List App!</h3>
+                    <p>Create your first list to get started</p>
+                    <button class="btn-primary" onclick="document.getElementById('create-list-btn').click()">
+                        + Create Your First List
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active List Display -->
+            <div id="active-list-container" class="active-list" style="display: none;">
+                <!-- List Header -->
+                <div class="list-header">
+                    <div class="list-title-section">
+                        <h2 id="current-list-title">List Name</h2>
+                        <span id="current-list-item-count" class="item-count">0 items</span>
+                    </div>
+                    <div class="list-actions">
+                        <button id="share-list-btn" class="btn-secondary">Share</button>
+                        <button id="list-options-btn" class="btn-options">⋮</button>
+                    </div>
+                </div>
+
+                <!-- Shared List Metadata -->
+                <div id="shared-meta-row" class="shared-meta-row" style="display: none;">
+                    <span id="shared-meta-text" class="shared-meta-text"></span>
+                    <button id="shared-meta-action" class="btn-link" type="button"></button>
+                </div>
+
+                <!-- Add Item Section -->
+                <section class="add-item-section">
+                    <div class="add-item-form">
+                        <input type="text" id="new-item-input" placeholder="Add new item..." maxlength="100">
+                        <button id="add-item-btn" class="btn-add">+</button>
+                    </div>
+                </section>
+
+                <!-- Items Display -->
+                <div class="items-container">
+                    <!-- Unchecked Items -->
+                    <div id="unchecked-items" class="items-section">
+                        <!-- Items will be dynamically added here -->
+                    </div>
+
+                    <!-- Visual Separator -->
+                    <div class="items-separator"></div>
+                    
+                    <!-- Completed Items Section -->
+                    <div class="completed-section">
+                        <h3 class="completed-header">Completed Items</h3>
+                        <div id="checked-items" class="items-section items-checked"></div>
+                    </div>
+                        <!-- Completed items will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Create List Modal -->
+    <div id="create-list-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Create New List</h3>
+            <input type="text" id="new-list-name" placeholder="Enter list name..." maxlength="50">
+            <div class="modal-actions">
+                <button id="create-list-confirm" class="btn-primary">Create List</button>
+                <button id="create-list-cancel" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share List Modal -->
+    <div id="share-list-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Share List</h3>
+            <p>Enter email address to share this list with:</p>
+            <input type="email" id="share-email-input" placeholder="user@example.com">
+            <div class="modal-actions">
+                <button id="share-list-confirm" class="btn-primary">Share List</button>
+                <button id="share-list-cancel" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- List Options Menu -->
+    <div id="list-options-menu" class="context-menu" style="display: none;">
+        <button id="share-list-menu-btn" class="menu-item">👥 Share List</button>
+        <button id="sort-list-menu-btn" class="menu-item">↕️ Sort This List</button>
+        <button id="rename-list-btn" class="menu-item">✏️ Rename List</button>
+        <button id="duplicate-list-btn" class="menu-item">📋 Duplicate List</button>
+        <button id="delete-list-btn" class="menu-item danger">🗑️ Delete List</button>
+    </div>
+
+    <!-- Item Context Menu -->
+    <div id="item-menu" class="context-menu" style="display: none;">
+        <button id="edit-item" class="menu-item">✏️ Edit</button>
+        <button id="move-item" class="menu-item">↗️ Move to List...</button>
+        <button id="copy-item" class="menu-item">📋 Copy to List...</button>
+        <button id="delete-item" class="menu-item danger">🗑️ Delete</button>
+    </div>
+
+    <!-- Manage Sharing Modal -->
+    <div id="manage-sharing-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Manage Sharing</h3>
+            <div id="shared-users-list" class="target-lists"></div>
+            <button id="manage-sharing-close" class="btn-secondary">Close</button>
+        </div>
+    </div>
+
+    <!-- Move/Copy Item Modal -->
+    <div id="move-copy-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="move-copy-title">Move Item to List</h3>
+            <div id="target-lists-container" class="target-lists">
+                <!-- Available lists will be shown here -->
+            </div>
+            <button id="move-copy-cancel" class="btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Duplicate Alert Modal -->
+    <div id="duplicate-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3>Similar Item Found</h3>
+            <p id="duplicate-message"></p>
+            <div class="modal-actions">
+                <button id="add-anyway-btn" class="btn-primary">Add Anyway</button>
+                <button id="view-existing-btn" class="btn-secondary">View Existing</button>
+                <button id="cancel-add-btn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h3 id="confirm-title">Confirm Action</h3>
+            <p id="confirm-message">Are you sure?</p>
+            <div class="modal-actions">
+                <button id="confirm-yes" class="btn-primary">Yes</button>
+                <button id="confirm-no" class="btn-secondary">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
+    
+    <!-- App Scripts -->
+    <script src="js/auth.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/lists.js"></script>
+    <script src="js/items.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

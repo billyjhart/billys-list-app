@@ -1,0 +1,1480 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f5f5f5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Authentication Section */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.auth-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+}
+
+.auth-card h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.auth-card p {
+    color: #7f8c8d;
+    margin-bottom: 30px;
+    font-size: 1rem;
+}
+
+/* Authentication Method Selector */
+.auth-mode-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.auth-method-btn {
+    flex: 1;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+}
+
+.auth-method-btn.active {
+    color: #667eea;
+    border-bottom-color: #667eea;
+}
+
+.auth-method-btn:hover:not(.active) {
+    color: #495057;
+}
+
+/* Authentication Forms */
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 12px;
+    transition: border-color 0.3s ease;
+}
+
+.auth-form input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.auth-form input::placeholder {
+    color: #adb5bd;
+}
+
+.auth-toggle {
+    text-align: center;
+    margin-top: 20px;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.link-btn {
+    background: none;
+    border: none;
+    color: #667eea;
+    cursor: pointer;
+    font-weight: 500;
+    text-decoration: underline;
+    padding: 0;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+}
+
+.link-btn:hover {
+    color: #5a67d8;
+}
+
+/* Auth Error Message */
+.auth-error {
+    margin-top: 20px;
+    padding: 12px 16px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    color: #721c24;
+    font-size: 0.9rem;
+}
+
+/* App Container */
+.app-container {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.app-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.app-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 0.9rem;
+}
+
+/* Lists Navigation */
+.lists-nav {
+    background: white;
+    border-bottom: 1px solid #e9ecef;
+    padding: 15px 20px;
+}
+
+.lists-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.lists-header h2 {
+    font-size: 1.1rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.lists-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 5px;
+}
+
+.list-tab {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 20px;
+    background: white;
+    color: #6c757d;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    position: relative;
+}
+
+.list-tab.active {
+    border-color: #667eea;
+    background: #667eea;
+    color: white;
+}
+
+.list-tab:hover:not(.active) {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.list-tab.shared {
+    border-color: #28a745;
+}
+
+.list-tab.shared.active {
+    background: #28a745;
+}
+
+.list-tab .shared-indicator {
+    font-size: 0.7rem;
+    margin-left: 4px;
+}
+
+/* No List Selected State */
+.no-list-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: 40px 20px;
+}
+
+.empty-state {
+    text-align: center;
+    max-width: 400px;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+.empty-state p {
+    color: #6c757d;
+    margin-bottom: 30px;
+    font-size: 1rem;
+}
+
+/* Active List Container */
+.active-list {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.list-header {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.list-title-section h2 {
+    font-size: 1.3rem;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.item-count {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.list-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Add Item Section */
+.add-item-section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.add-item-form {
+    display: flex;
+    gap: 10px;
+}
+
+#new-item-input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+}
+
+#new-item-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.btn-add {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: #667eea;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-add:hover {
+    background: #5a67d8;
+    transform: scale(1.05);
+}
+
+/* Items Container */
+.items-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.items-section {
+    padding: 0;
+}
+
+/* Visual Separator for Checked Items */
+.items-checked {
+    border-top: 2px solid #e9ecef;
+    margin-top: 8px;
+    position: relative;
+}
+
+.items-checked::before {
+    content: "✅ Completed Items";
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background: white;
+    padding: 0 12px;
+    font-size: 0.75rem;
+    color: #6c757d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Item Styles */
+.item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f1f3f4;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+
+.item:hover {
+    background-color: #f8f9fa;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.item-checkbox {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #dee2e6;
+    border-radius: 4px;
+    margin-right: 16px;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.item-checkbox.checked {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.item-checkbox.checked::after {
+    content: '✓';
+    color: white;
+    position: absolute;
+    top: -2px;
+    left: 3px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.item-text {
+    flex: 1;
+    font-size: 1rem;
+    color: #2c3e50;
+    user-select: none;
+}
+
+.item.checked .item-text {
+    color: #6c757d;
+    text-decoration: line-through;
+}
+
+.item-actions {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.item:hover .item-actions {
+    opacity: 1;
+}
+
+.item-menu-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.item-menu-btn:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+/* Edit Mode Styles */
+.edit-mode .item-checkbox {
+    display: none;
+}
+
+.edit-mode .item-actions {
+    display: none;
+}
+
+.item-text-input {
+    flex: 1;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    background: white;
+    transition: border-color 0.3s ease;
+}
+
+.item-text-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.add-item-input {
+    display: flex;
+    padding: 16px 20px;
+    background-color: #f8f9fa;
+    border-top: 2px dashed #dee2e6;
+    margin-top: 8px;
+}
+
+.add-item-input input {
+    flex: 1;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 1rem;
+}
+
+.add-item-input input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.add-item-input::before {
+    content: "➕";
+    margin-right: 12px;
+    color: #667eea;
+    font-size: 1.1rem;
+    align-self: center;
+}
+
+/* Buttons */
+.btn-primary {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    background: #5a67d8;
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+.btn-create {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-create:hover {
+    background: #218838;
+    transform: scale(1.05);
+}
+
+.btn-edit, .btn-save, .btn-cancel {
+    background: #667eea;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-edit:hover {
+    background: #5a67d8;
+}
+
+.btn-save {
+    background: #28a745;
+}
+
+.btn-save:hover {
+    background: #218838;
+}
+
+.btn-cancel {
+    background: #6c757d;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+}
+
+.btn-options {
+    background: none;
+    border: none;
+    color: #6c757d;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.btn-options:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.btn-icon {
+    font-size: 1.1rem;
+}
+
+/* Modals */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.modal-content h3 {
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 1.2rem;
+}
+
+.modal-content p {
+    margin-bottom: 20px;
+    color: #6c757d;
+    line-height: 1.5;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+}
+
+.modal-content input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.modal-actions button {
+    flex: 1;
+    min-width: 100px;
+}
+
+/* Context Menus */
+.context-menu {
+    position: fixed;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    padding: 8px 0;
+    z-index: 1000;
+    min-width: 160px;
+    border: 1px solid #e9ecef;
+}
+
+.menu-item {
+    display: block;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #495057;
+    transition: background-color 0.2s ease;
+}
+
+.menu-item:hover {
+    background-color: #f8f9fa;
+}
+
+.menu-item.danger {
+    color: #dc3545;
+}
+
+.menu-item.danger:hover {
+    background-color: #f5f5f5;
+    color: #c82333;
+}
+
+/* Target Lists (Move/Copy Modal) */
+.target-lists {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.target-list-option {
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    color: #495057;
+    text-align: left;
+}
+
+.target-list-option:hover {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+    color: #667eea;
+}
+
+/* Empty States */
+.empty-items-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+}
+
+.empty-items-state h4 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.empty-items-state p {
+    font-size: 0.9rem;
+}
+
+/* Loading States */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+.loading::after {
+    content: "⏳";
+    margin-left: 8px;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 15px 20px;
+    }
+    
+    .app-header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .user-info {
+        font-size: 0.8rem;
+        gap: 10px;
+    }
+    
+    .lists-nav {
+        padding: 15px 20px;
+    }
+    
+    .list-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    .list-actions {
+        align-self: flex-end;
+        flex-wrap: wrap;
+    }
+    
+    .add-item-section {
+        padding: 15px 20px;
+    }
+    
+    .active-list {
+        padding: 15px;
+    }
+    
+    .item {
+        padding: 12px 20px;
+    }
+    
+    .modal-content {
+        padding: 20px;
+        margin: 0 15px;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-actions button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 30px 20px;
+    }
+    
+    .auth-card h1 {
+        font-size: 1.6rem;
+    }
+    
+    .app-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .user-info {
+        align-self: flex-end;
+    }
+    
+    .lists-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+    
+    .btn-create {
+        align-self: flex-end;
+    }
+    
+    .add-item-form {
+        flex-direction: column;
+    }
+    
+    .btn-add {
+        width: 100%;
+        height: 44px;
+        border-radius: 8px;
+    }
+    
+    .list-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+}
+/* ===== Restored compact layout (from Mar 9 session) ===== */
+
+/* 1. Header Compression - Force Inline */
+.app-header {
+    padding: 12px 20px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.app-header h1 {
+    font-size: 1.3rem !important;
+    margin: 0 !important;
+    flex: 1 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+}
+
+.user-info {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+}
+
+.btn-secondary {
+    padding: 6px 12px !important;
+    font-size: 0.9rem !important;
+    min-width: auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* Theme toggle (kept compact and inline-safe) */
+.theme-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 2px solid rgba(255,255,255,0.55);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 1.15rem;
+    cursor: pointer;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+
+.theme-toggle:hover { background: rgba(255,255,255,0.25); }
+
+/* 2. Lists Header Compression - Force Inline */
+.lists-nav {
+    padding: 6px 20px 2px 20px !important;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 0 !important;
+}
+
+.lists-header {
+    padding: 4px 0 2px 0 !important;
+    margin-bottom: 2px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.lists-header h2 {
+    font-size: 1.1rem !important;
+    margin: 0 !important;
+    flex: 1 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    min-width: 0 !important;
+}
+
+.btn-create {
+    padding: 0 !important;
+    font-size: 1.2rem !important;
+    min-width: auto !important;
+    border-radius: 50% !important;
+    width: 32px !important;
+    height: 32px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+}
+
+/* 3. List Tabs - Horizontal Scroll */
+.lists-tabs {
+    display: flex !important;
+    overflow-x: auto !important;
+    gap: 8px !important;
+    padding: 8px 0 12px 0 !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.lists-tabs::-webkit-scrollbar {
+    display: none !important;
+}
+
+.list-tab {
+    flex-shrink: 0 !important;
+    min-width: 120px !important;
+    padding: 8px 16px !important;
+    border-radius: 20px !important;
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
+}
+
+/* 4. List Header Compression */
+.list-header {
+    padding: 12px 20px 8px 20px !important;
+}
+
+.list-header h2 {
+    font-size: 1.2rem !important;
+    margin: 0 !important;
+}
+
+/* Keep hidden for compact look */
+.item-count {
+    display: none !important;
+}
+
+/* Action buttons compact: show options, keep save/cancel when editing */
+.list-actions .btn-edit,
+.list-actions .btn-secondary,
+.list-actions .btn-options {
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+    display: none !important;
+}
+
+.list-actions .btn-options {
+    display: block !important;
+    padding: 8px !important;
+}
+
+.list-actions .btn-save,
+.list-actions .btn-cancel {
+    padding: 6px 12px !important;
+    font-size: 0.8rem !important;
+}
+
+/* 5. Inline Add Item - Force Single Line */
+.add-item-section {
+    padding: 12px 20px !important;
+}
+
+.add-item-form {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    white-space: nowrap !important;
+}
+
+.add-item-form > * {
+    white-space: normal !important;
+}
+
+#new-item-input {
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 12px 16px !important;
+    border-radius: 25px !important;
+    margin: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    display: inline-block !important;
+}
+
+#add-item-btn,
+.add-item-form .btn-add {
+    flex: 0 0 auto !important;
+    flex-shrink: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.2rem !important;
+}
+
+/* 6. Items Section Compression */
+.items-section {
+    padding-top: 8px !important;
+}
+
+.item {
+    padding: 10px 20px !important;
+}
+
+/* 7. Mobile Responsive Overrides */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 10px 16px !important;
+    }
+
+    .lists-nav {
+        padding: 6px 16px !important;
+    }
+
+    .list-header {
+        padding: 10px 16px 6px 16px !important;
+    }
+
+    .add-item-section {
+        padding: 10px 16px !important;
+    }
+
+    .add-item-form {
+        gap: 10px !important;
+    }
+
+    #new-item-input {
+        padding: 10px 14px !important;
+    }
+
+    #add-item-btn,
+    .add-item-form .btn-add {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .item {
+        padding: 8px 16px !important;
+    }
+}
+
+/* ===== Dark mode layer (safe overlay) ===== */
+[data-theme="dark"] body {
+    background: #0a0e27;
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .app-container,
+[data-theme="dark"] .lists-nav,
+[data-theme="dark"] .active-list,
+[data-theme="dark"] .list-header,
+[data-theme="dark"] .add-item-section,
+[data-theme="dark"] .items-container,
+[data-theme="dark"] .auth-card,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .context-menu,
+[data-theme="dark"] .app-menu,
+[data-theme="dark"] .list-tab,
+[data-theme="dark"] #new-item-input,
+[data-theme="dark"] .item-text-input,
+[data-theme="dark"] .auth-form input,
+[data-theme="dark"] .modal-content input {
+    background: #1a1f3a !important;
+    color: #f1f5f9 !important;
+    border-color: #2a2f4a !important;
+}
+
+[data-theme="dark"] .app-header {
+    background: #1a1f3a !important;
+    border-bottom: 1px solid #2a2f4a !important;
+    box-shadow: none !important;
+}
+
+[data-theme="dark"] .lists-header h2,
+[data-theme="dark"] .list-title-section h2,
+[data-theme="dark"] .auth-card h1,
+[data-theme="dark"] .empty-state h3,
+[data-theme="dark"] .empty-items-state h4 {
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .auth-card p,
+[data-theme="dark"] .empty-state p,
+[data-theme="dark"] .empty-items-state p,
+[data-theme="dark"] .list-owner,
+[data-theme="dark"] .auth-toggle,
+[data-theme="dark"] .item-count {
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .list-tab {
+    background: #0a0e27 !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .list-tab.active {
+    background: #3b82f6 !important;
+    border-color: #3b82f6 !important;
+    color: #0a0e27 !important;
+}
+
+[data-theme="dark"] .btn-primary {
+    background: #3b82f6 !important;
+    color: #0a0e27 !important;
+}
+
+[data-theme="dark"] .btn-primary:hover {
+    background: #60a5fa !important;
+}
+
+[data-theme="dark"] .btn-secondary {
+    border-color: #3b82f6 !important;
+    color: #3b82f6 !important;
+    background: transparent !important;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+    background: #3b82f6 !important;
+    color: #0a0e27 !important;
+}
+
+[data-theme="dark"] .item {
+    border-bottom-color: #2a2f4a !important;
+}
+
+[data-theme="dark"] .item:hover {
+    background: rgba(59,130,246,0.08) !important;
+}
+
+[data-theme="dark"] .items-checked::before {
+    color: #cbd5e1 !important;
+    border-top-color: #2a2f4a !important;
+    background: #1a1f3a !important;
+}
+
+[data-theme="dark"] .theme-toggle {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #0a0e27;
+}
+
+[data-theme="dark"] .theme-toggle:hover {
+    background: #60a5fa;
+}
+
+/* ===== Folder-tab styling + active-only tab menu ===== */
+.lists-tabs {
+    align-items: flex-end !important;
+    gap: 4px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.list-tab {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    padding: 6px 10px !important;
+    border: 1px solid #cfd6df !important;
+    border-bottom: none !important;
+    border-radius: 10px 10px 0 0 !important;
+    background: #e9edf3 !important;
+    color: #4a5568 !important;
+    box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
+}
+
+.list-tab .list-tab-label {
+    background: transparent;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
+    max-width: none;
+}
+
+.list-tab.active {
+    background: #ffffff !important;
+    color: #2d3748 !important;
+    border-color: #b9c3cf !important;
+    position: relative;
+    top: 1px;
+    z-index: 2;
+    box-shadow: 0 -1px 2px rgba(0,0,0,0.06);
+}
+
+.tab-menu-btn {
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.tab-menu-btn:hover { background: rgba(0,0,0,0.08); }
+
+/* Remove duplicate list-name section below tabs */
+.list-header {
+    display: none !important;
+}
+
+/* keep active list body snug against tabs */
+.active-list { padding-top: 6px !important; }
+
+[data-theme="dark"] .list-tab {
+    background: #2a2f4a !important;
+    color: #cbd5e1 !important;
+    border-color: #3a4260 !important;
+}
+
+[data-theme="dark"] .list-tab.active {
+    background: #1a1f3a !important;
+    color: #f1f5f9 !important;
+    border-color: #4b5a86 !important;
+}
+
+[data-theme="dark"] .tab-menu-btn { color: #cbd5e1; }
+[data-theme="dark"] .tab-menu-btn:hover { background: rgba(255,255,255,0.08); }
+
+/* ===== Add-item row visually merged into item list ===== */
+.add-item-section {
+    margin-bottom: 0 !important;
+    border-radius: 10px 10px 0 0 !important;
+    box-shadow: none !important;
+    border: 1px solid #e9ecef !important;
+    border-bottom: 1px solid #f1f3f4 !important;
+    background: #ffffff !important;
+}
+
+.items-container {
+    margin-top: 0 !important;
+    border-radius: 0 0 10px 10px !important;
+    box-shadow: none !important;
+    border: 1px solid #e9ecef !important;
+    border-top: 0 !important;
+}
+
+/* Make input feel like first list row, not a separate card */
+#new-item-input {
+    border-radius: 8px !important;
+}
+
+[data-theme="dark"] .add-item-section {
+    background: #1a1f3a !important;
+    border-color: #2a2f4a !important;
+    border-bottom-color: #2a2f4a !important;
+}
+
+[data-theme="dark"] .items-container {
+    border-color: #2a2f4a !important;
+}
+
+/* Remove distracting completed-items label/check icon */
+.completed-header {
+    display: none !important;
+}
+
+.items-checked::before {
+    content: none !important;
+    display: none !important;
+}
+
+/* Dark mode: item text should be white */
+[data-theme="dark"] .item-text {
+    color: #f1f5f9 !important;
+}
+
+/* App menu as popup (like item menu) */
+.app-menu {
+    position: fixed;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    padding: 8px 0;
+    z-index: 1200;
+    min-width: 220px;
+}
+
+.app-menu .menu-item {
+    padding: 10px 14px;
+}
+
+[data-theme="dark"] .app-menu {
+    background: #1a1f3a;
+    border-color: #2a2f4a;
+}
+
+[data-theme="dark"] .app-menu .menu-item {
+    color: #f1f5f9;
+}
+
+[data-theme="dark"] .app-menu .menu-item:hover {
+    background: #2a2f4a;
+}
+
+/* Inline item editing UX */
+.item-text {
+    cursor: text;
+}
+
+.inline-edit-input {
+    width: 100%;
+    border: 1px solid #667eea !important;
+    border-radius: 6px;
+    padding: 6px 8px;
+    background: #fff;
+    color: #2c3e50;
+}
+
+[data-theme="dark"] .inline-edit-input {
+    background: #0f1530;
+    color: #f1f5f9;
+    border-color: #3b82f6 !important;
+}
+
+
+/* Shared metadata row */
+.shared-meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 6px 0 8px;
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+}
+
+.shared-meta-text {
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.btn-link {
+    border: 0;
+    background: transparent;
+    color: #2563eb;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 4px;
+}
+
+.share-user-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.share-user-row:last-child {
+    border-bottom: 0;
+}
+
+.share-user-name {
+    font-weight: 600;
+    color: #334155;
+}
+
+.share-user-email {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+[data-theme="dark"] .shared-meta-row {
+    background: #1a1f3a;
+    border-color: #2a2f4a;
+}
+
+[data-theme="dark"] .shared-meta-text,
+[data-theme="dark"] .share-user-name,
+[data-theme="dark"] .share-user-email {
+    color: #e2e8f0;
+}
+
+[data-theme="dark"] .share-user-row {
+    border-bottom-color: #2a2f4a;
+}
