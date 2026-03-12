@@ -1757,3 +1757,12 @@ body {
 [data-theme="dark"] .app-header {
     border-bottom: 0 !important;
 }
+
+
+/* Remove middle corner rounding; keep only bottom rounding */
+.add-item-section {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
