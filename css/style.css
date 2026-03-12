@@ -1766,3 +1766,100 @@ body {
     border-bottom-left-radius: 0 !important;
     border-bottom-right-radius: 0 !important;
 }
+
+
+/* Shared-with/by row: keep content inside list box without overflow */
+.shared-meta-row {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 12px;
+    row-gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.shared-meta-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shared-meta-action {
+    justify-self: end;
+    white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+    .shared-meta-row {
+        grid-template-columns: 1fr;
+    }
+
+    .shared-meta-action {
+        justify-self: start;
+    }
+
+    .shared-meta-text {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+
+
+/* Fix: shared-meta visibility + integrated styling */
+.shared-meta-row {
+    /* do not force visible; JS controls this row */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    /* integrate into list area instead of separate pill box */
+    margin: 2px 0 8px;
+    padding: 0 0 8px 0;
+    border: 0;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 0;
+    background: transparent;
+}
+
+.shared-meta-row[style*="display: none"] {
+    display: none !important;
+}
+
+.shared-meta-text {
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.shared-meta-action {
+    white-space: nowrap;
+}
+
+[data-theme="dark"] .shared-meta-row {
+    border-bottom-color: #2a2f4a;
+}
+
+
+/* Shared row inside add-item section */
+.add-item-section .shared-meta-row {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+
+/* Shared row: remove bottom divider line */
+.add-item-section .shared-meta-row {
+    border-bottom: 0 !important;
+}
+
+
+/* Active tab ellipsis should match active tab text color */
+.list-tab.active .tab-menu-btn {
+    color: currentColor !important;
+}
