@@ -507,6 +507,13 @@ class ItemsManager {
 
             // ===== Desktop HTML5 drag =====
             item.ondragstart = (e) => {
+                // Only allow drag initiation from the explicit drag handle
+                const fromHandle = e.target && e.target.closest && e.target.closest('.drag-handle');
+                if (!fromHandle) {
+                    e.preventDefault();
+                    return false;
+                }
+
                 this.draggedItemEl = item;
                 item.classList.add('dragging');
                 if (e.dataTransfer) {
@@ -541,9 +548,9 @@ class ItemsManager {
             item.ontouchstart = (e) => {
                 if (!enabled || this.isEditMode) return;
 
-                // Do not start drag from interactive controls (checkbox/menu/buttons)
-                const interactive = e.target.closest('.item-checkbox, .item-menu-btn, .item-actions, button, a, input, textarea');
-                if (interactive) return;
+                // Mobile drag can only start from the drag handle
+                const fromHandle = e.target.closest('.drag-handle');
+                if (!fromHandle) return;
 
                 this.touchDraggedItemEl = item;
                 this.touchDragMoved = false;
