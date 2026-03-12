@@ -1299,7 +1299,7 @@ body {
 }
 
 /* keep active list body snug against tabs */
-.active-list { padding-top: 6px !important; }
+.active-list { padding-top: 0 !important; }
 
 [data-theme="dark"] .list-tab {
     background: #2a2f4a !important;
@@ -1477,4 +1477,283 @@ body {
 
 [data-theme="dark"] .share-user-row {
     border-bottom-color: #2a2f4a;
+}
+
+
+/* ===== Desktop alignment: center app header + list nav with list content ===== */
+.app-chrome-inner {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Keep top area centered as part of the app (not full-width bars) */
+.app-header {
+    display: block !important;
+    padding: 12px 0 8px 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.app-header .app-chrome-inner {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    color: white;
+    border-radius: 12px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.lists-nav {
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    background: transparent !important;
+    border-bottom: 0 !important;
+}
+
+.lists-nav .app-chrome-inner {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 0;
+    padding-top: 6px;
+    padding-bottom: 0;
+}
+
+/* Remove gap: tabs should attach directly to active list area */
+.lists-tabs {
+    margin-bottom: 0 !important;
+}
+
+.active-list {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+[data-theme="dark"] .app-header .app-chrome-inner {
+    background: #1a1f3a !important;
+    border: 1px solid #2a2f4a;
+}
+
+[data-theme="dark"] .lists-nav .app-chrome-inner {
+    background: #1a1f3a !important;
+    border-color: #2a2f4a;
+}
+
+@media (max-width: 768px) {
+    .app-chrome-inner {
+        padding: 0 16px;
+    }
+
+    .app-header {
+        padding: 10px 0 6px 0 !important;
+    }
+}
+
+
+/* Single uninterrupted card: tabs + active list */
+.lists-nav .app-chrome-inner {
+    border-radius: 12px 12px 0 0;
+}
+
+.active-list {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-top: 0;
+    border-radius: 0 0 12px 12px;
+    padding: 0 0 12px 0 !important;
+}
+
+.list-header,
+.add-item-section,
+.items-container {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin-bottom: 0 !important;
+}
+
+.list-header,
+.add-item-section {
+    border-bottom: 1px solid #eef1f4;
+}
+
+.items-section {
+    padding-top: 0 !important;
+}
+
+[data-theme="dark"] .active-list {
+    background: #1a1f3a !important;
+    border-color: #2a2f4a;
+}
+
+[data-theme="dark"] .list-header,
+[data-theme="dark"] .add-item-section {
+    border-bottom-color: #2a2f4a;
+}
+
+
+/* Refinement: denser rows + active tab merged into list card */
+.lists-tabs {
+    gap: 6px !important;
+    padding: 8px 0 0 0 !important;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.list-tab {
+    margin-bottom: -1px;
+}
+
+.list-tab.active {
+    border-bottom-color: #ffffff !important;
+}
+
+.list-header {
+    padding: 10px 18px 6px 18px !important;
+}
+
+.add-item-section {
+    padding: 10px 18px !important;
+}
+
+.add-item-form {
+    gap: 10px !important;
+}
+
+#new-item-input {
+    padding: 10px 14px !important;
+}
+
+#add-item-btn,
+.add-item-form .btn-add {
+    width: 40px !important;
+    height: 40px !important;
+}
+
+.item {
+    padding: 8px 18px !important;
+}
+
+[data-theme="dark"] .lists-tabs {
+    border-bottom-color: #2a2f4a;
+}
+
+[data-theme="dark"] .list-tab.active {
+    border-bottom-color: #1a1f3a !important;
+}
+
+
+/* Fix: no line under active tab + remove boxed feel on add section */
+.lists-tabs {
+    border-bottom: 0 !important;
+}
+
+.list-tab {
+    position: relative;
+}
+
+.list-tab:not(.active)::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: -3px;
+    height: 1px;
+    background: #e9ecef;
+}
+
+.list-tab.active {
+    z-index: 2;
+    margin-bottom: 0 !important;
+    border-bottom-color: transparent !important;
+}
+
+.add-item-section {
+    border: 0 !important;
+    outline: 0 !important;
+}
+
+[data-theme="dark"] .list-tab:not(.active)::after {
+    background: #2a2f4a;
+}
+
+
+/* Final tab seam fix: active tab has no bottom edge at all */
+.list-tab.active {
+    border-bottom-width: 0 !important;
+    padding-bottom: 9px !important;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+[data-theme="dark"] .list-tab.active {
+    border-bottom-width: 0 !important;
+}
+
+
+/* Structure tweak: grounded list box under tabs */
+.active-list {
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    padding: 0 0 12px 0 !important;
+}
+
+.list-header {
+    margin-bottom: 10px !important;
+}
+
+.add-item-section {
+    border: 1px solid #dfe5ec !important;
+    border-bottom: 0 !important;
+    border-radius: 10px 10px 0 0 !important;
+    box-shadow: none !important;
+    margin-bottom: 0 !important;
+}
+
+.items-container {
+    border: 1px solid #dfe5ec !important;
+    border-top: 0 !important;
+    border-radius: 0 0 10px 10px !important;
+    box-shadow: none !important;
+    margin-top: 0 !important;
+}
+
+.lists-tabs {
+    border-bottom: 0 !important;
+}
+
+.list-tab.active {
+    border-bottom-width: 0 !important;
+}
+
+[data-theme="dark"] .add-item-section,
+[data-theme="dark"] .items-container {
+    border-color: #2a2f4a !important;
+}
+
+
+/* Match active tab color to add-item plus button */
+.list-tab.active,
+.list-tab.shared.active {
+    background: #667eea !important;
+    border-color: #667eea !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .list-tab.active,
+[data-theme="dark"] .list-tab.shared.active {
+    background: #667eea !important;
+    border-color: #667eea !important;
+    color: #ffffff !important;
+}
+
+
+/* Dark mode cleanup: remove full-width divider above My Lists */
+[data-theme="dark"] .app-header {
+    border-bottom: 0 !important;
 }
