@@ -423,6 +423,31 @@ body {
     font-weight: bold;
 }
 
+
+/* Larger left-side drag handle for easier mobile reordering */
+.drag-handle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-right: 12px;
+    border-radius: 8px;
+    color: #64748b;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    flex-shrink: 0;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+    background: rgba(0,0,0,0.06);
+}
+
 .item-text {
     flex: 1;
     font-size: 1rem;

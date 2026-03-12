@@ -353,8 +353,8 @@ class ItemsManager {
         itemElement.dataset.checked = item.checked ? '1' : '0';
         
         itemElement.innerHTML = `
-            <div class="item-checkbox${item.checked ? ' checked' : ''}"></div>
             <div class="drag-handle" aria-hidden="true">≡</div>
+            <div class="item-checkbox${item.checked ? ' checked' : ''}"></div>
             <div class="item-text">${this.escapeHtml(item.name)}</div>
             <div class="item-actions">
                 <button class="item-menu-btn">⋮</button>
