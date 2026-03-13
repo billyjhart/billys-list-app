@@ -4,6 +4,8 @@ class UIManager {
     constructor(database) {
         this.database = database;
         this.isInitialized = false;
+        this.isInitializing = false;
+        this.initializationPromise = null;
         
         this.initializeElements();
         this.initializeEventListeners();
@@ -37,45 +39,56 @@ class UIManager {
     // Initialize UI with user data
     async initializeWithUser(user) {
         if (this.isInitialized) return;
-        
-        try {
-            console.log('Initializing UI for user:', user.displayName);
-            
-            // Set up database with current user
-            await this.database.setCurrentUser(user);
-            
-            // Initialize managers
-            this.listsManager = new ListsManager(this.database);
-            this.itemsManager = new ItemsManager(this.database);
-
-            // Set up cross-manager communication BEFORE loading lists
-            // so auto-selected list can notify itemsManager immediately.
-            this.setupManagerCommunication();
-            
-            // Load user's lists (may auto-select first list)
-            await this.listsManager.loadUserLists();
-
-            // Safety: ensure items manager is synced with current selection after refresh
-            const currentListId = this.listsManager.getCurrentListId();
-            if (currentListId) {
-                this.itemsManager.setCurrentList(currentListId);
-            }
-            
-            // Focus on new item input if a list is selected
-            setTimeout(() => {
-                const newItemInput = document.getElementById('new-item-input');
-                if (newItemInput && this.listsManager.getCurrentListId()) {
-                    newItemInput.focus();
-                }
-            }, 100);
-            
-            this.isInitialized = true;
-            console.log('UI initialized successfully');
-            
-        } catch (error) {
-            console.error('Failed to initialize UI:', error);
-            this.showError('Failed to initialize the app. Please refresh and try again.');
+        if (this.isInitializing && this.initializationPromise) {
+            await this.initializationPromise;
+            return;
         }
+
+        this.isInitializing = true;
+        this.initializationPromise = (async () => {
+            try {
+                console.log('Initializing UI for user:', user.displayName);
+
+                // Set up database with current user
+                await this.database.setCurrentUser(user);
+
+                // Initialize managers
+                this.listsManager = new ListsManager(this.database);
+                this.itemsManager = new ItemsManager(this.database);
+
+                // Set up cross-manager communication BEFORE loading lists
+                // so auto-selected list can notify itemsManager immediately.
+                this.setupManagerCommunication();
+
+                // Load user's lists (may auto-select first list)
+                await this.listsManager.loadUserLists();
+
+                // Safety: ensure items manager is synced with current selection after refresh
+                const currentListId = this.listsManager.getCurrentListId();
+                if (currentListId) {
+                    this.itemsManager.setCurrentList(currentListId);
+                }
+
+                // Focus on new item input if a list is selected
+                setTimeout(() => {
+                    const newItemInput = document.getElementById('new-item-input');
+                    if (newItemInput && this.listsManager.getCurrentListId()) {
+                        newItemInput.focus();
+                    }
+                }, 100);
+
+                this.isInitialized = true;
+                console.log('UI initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize UI:', error);
+                this.showError('Failed to initialize the app. Please refresh and try again.');
+            } finally {
+                this.isInitializing = false;
+                this.initializationPromise = null;
+            }
+        })();
+
+        await this.initializationPromise;
     }
 
     // Set up communication between managers
@@ -407,6 +420,8 @@ class UIManager {
         }
         
         this.isInitialized = false;
+        this.isInitializing = false;
+        this.initializationPromise = null;
     }
 
     // Debugging helpers

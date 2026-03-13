@@ -49,6 +49,7 @@
 
                 <div class="auth-toggle" style="margin-top:8px;">
                     <p><button id="forgot-password-btn" class="link-btn">Forgot password?</button></p>
+                    <p><button id="resend-verification-btn" class="link-btn">Resend verification email</button></p>
                 </div>
                 
                 <div class="auth-toggle">
@@ -62,6 +63,25 @@
                 <input type="email" id="signup-email" placeholder="Enter your email" maxlength="100">
                 <input type="password" id="signup-password" placeholder="Create a password" maxlength="100">
                 <input type="password" id="signup-confirm" placeholder="Confirm password" maxlength="100">
+
+                <div class="tos-box" aria-label="Terms of Service">
+                    <h3>Terms of Service (High Level)</h3>
+                    <p>By using Billy's List App, you agree to use it respectfully and lawfully.</p>
+                    <ul>
+                        <li>No harassment, bullying, threats, or abusive behavior.</li>
+                        <li>No hateful, violent, sexual, or illegal content.</li>
+                        <li>You are responsible for content you add and share.</li>
+                        <li>Keep your account secure and respect shared-list permissions.</li>
+                        <li>Service may change over time and is provided “as is”.</li>
+                        <li>Accounts may be suspended for violations.</li>
+                    </ul>
+                    <p class="tos-contact">Contact: <a href="https://www.linkedin.com/in/billyhart/" target="_blank" rel="noopener noreferrer">linkedin.com/in/billyhart</a></p>
+                </div>
+
+                <label class="tos-agree-row" for="signup-terms-agree">
+                    <input type="checkbox" id="signup-terms-agree">
+                    <span>I have read and agree to the Terms of Service.</span>
+                </label>
                 
                 <button id="sign-up-email-btn" class="btn-primary">
                     <span class="btn-icon">✨</span>
@@ -94,6 +114,7 @@
                     <button id="account-password-btn" class="menu-item menu-button">🔒 Update Password</button>
                     <button id="account-sort-defaults-btn" class="menu-item menu-button">↕️ Sorting Preferences</button>
                     <button id="theme-mode-btn" class="menu-item menu-button">🌓 Toggle Dark/Light Mode</button>
+                    <button id="delete-account-btn" class="menu-item menu-button danger">🗑️ Delete Account</button>
                     <button id="sign-out-btn" class="menu-item menu-button">Sign Out</button>
                 </div>
             </div>
@@ -145,7 +166,7 @@
                     <!-- Shared List Metadata -->
                     <div id="shared-meta-row" class="shared-meta-row" style="display: none;">
                         <span id="shared-meta-text" class="shared-meta-text"></span>
-                        <button id="shared-meta-action" class="btn-link" type="button"></button>
+                        <button id="shared-meta-action" class="btn-link shared-meta-action" type="button"></button>
                     </div>
 
                     <div class="add-item-form">
@@ -174,6 +195,39 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Terms of Service Modal (for first-time/updated policy acceptance) -->
+    <div id="terms-modal" class="modal" style="display: none;">
+        <div class="modal-content terms-modal-content">
+            <h3>Terms of Service</h3>
+            <p>Please review and accept before continuing.</p>
+            <p id="terms-version-label" class="terms-version-label"></p>
+
+            <div class="tos-box" aria-label="Terms of Service">
+                <h3>Terms of Service (High Level)</h3>
+                <p>By using Billy's List App, you agree to use it respectfully and lawfully.</p>
+                <ul>
+                    <li>No harassment, bullying, threats, or abusive behavior.</li>
+                    <li>No hateful, violent, sexual, or illegal content.</li>
+                    <li>You are responsible for content you add and share.</li>
+                    <li>Keep your account secure and respect shared-list permissions.</li>
+                    <li>Service may change over time and is provided “as is”.</li>
+                    <li>Accounts may be suspended for violations.</li>
+                </ul>
+                <p class="tos-contact">Contact: <a href="https://www.linkedin.com/in/billyhart/" target="_blank" rel="noopener noreferrer">linkedin.com/in/billyhart</a></p>
+            </div>
+
+            <label class="tos-agree-row" for="terms-modal-agree">
+                <input type="checkbox" id="terms-modal-agree">
+                <span>I have read and agree to the Terms of Service.</span>
+            </label>
+
+            <div class="modal-actions">
+                <button id="terms-accept-btn" class="btn-primary" disabled>Accept & Continue</button>
+                <button id="terms-decline-btn" class="btn-secondary">Decline</button>
+            </div>
+        </div>
     </div>
 
     <!-- Create List Modal -->

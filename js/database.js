@@ -24,14 +24,36 @@ class DatabaseManager {
     async setCurrentUser(user) {
         this.currentUserId = user.uid;
         this.currentUserEmail = user.email;
-        
-        // Create/update user profile
+
+        // Create/update user profile.
+        // Important: auth state can arrive before displayName propagation on brand-new accounts.
+        // Do not overwrite an existing profile name with email fallback during that window.
         const userProfileRef = this.usersRef.child(`${user.uid}/profile`);
-        await userProfileRef.set({
-            name: user.displayName || user.email,
+        const existingProfileSnap = await userProfileRef.once('value');
+        const existingProfile = existingProfileSnap.exists() ? (existingProfileSnap.val() || {}) : {};
+
+        let displayName = (user.displayName || '').trim();
+        const existingName = (existingProfile.name || '').trim();
+
+        // New-account race: auth callback can arrive before displayName propagation.
+        // Try one refresh before falling back to email.
+        if (!displayName) {
+            try {
+                const refreshedUser = auth.currentUser || user;
+                await refreshedUser.reload();
+                displayName = ((auth.currentUser || refreshedUser).displayName || '').trim();
+            } catch (e) {
+                console.warn('Display name refresh during setCurrentUser failed:', e);
+            }
+        }
+
+        const resolvedName = displayName || existingName || user.email;
+
+        await userProfileRef.update({
+            name: resolvedName,
             email: user.email,
             lastSeen: firebase.database.ServerValue.TIMESTAMP,
-            photoURL: user.photoURL || null
+            photoURL: user.photoURL || existingProfile.photoURL || null
         });
 
         // Maintain fast email → uid index for sharing lookups
@@ -772,6 +794,69 @@ class DatabaseManager {
             unchecked: listMode.unchecked === 'default' ? defaults.unchecked : listMode.unchecked,
             checked: listMode.checked === 'default' ? defaults.checked : listMode.checked
         };
+    }
+
+    async deleteUserDataByUid(userId, userEmail) {
+        if (!userId) throw new Error('User not authenticated');
+
+        const userRef = this.usersRef.child(userId);
+        const userSnapshot = await userRef.once('value');
+        const userData = userSnapshot.exists() ? userSnapshot.val() : {};
+        const lists = userData.lists || {};
+
+        for (const [listId, listData] of Object.entries(lists)) {
+            if (!listData) continue;
+
+            if (listData.owner === userId) {
+                const sharedWith = listData.sharedWith || [];
+
+                if (sharedWith.length > 0) {
+                    await Promise.all(sharedWith.map(uid =>
+                        this.usersRef.child(`${uid}/lists/${listId}`).remove()
+                    ));
+                }
+
+                await this.sharedListsRef.child(listId).remove();
+            } else {
+                const ownerId = listData.owner;
+                if (!ownerId) continue;
+
+                const ownerListRef = this.usersRef.child(`${ownerId}/lists/${listId}`);
+                const ownerListSnapshot = await ownerListRef.once('value');
+
+                if (ownerListSnapshot.exists()) {
+                    const ownerList = ownerListSnapshot.val();
+                    const updatedSharedWith = (ownerList.sharedWith || []).filter(uid => uid !== userId);
+
+                    await ownerListRef.child('sharedWith').set(updatedSharedWith);
+
+                    if (updatedSharedWith.length > 0) {
+                        await Promise.all(updatedSharedWith.map(uid =>
+                            this.usersRef.child(`${uid}/lists/${listId}/sharedWith`).set(updatedSharedWith)
+                        ));
+                    }
+
+                    await this.sharedListsRef.child(listId).set({
+                        owner: ownerId,
+                        users: [ownerId, ...updatedSharedWith],
+                        name: ownerList.name || listData.name || 'List'
+                    });
+                }
+            }
+        }
+
+        const normalizedEmail = this.normalizeEmail(userEmail || this.currentUserEmail);
+        if (normalizedEmail) {
+            await this.userEmailsRef.child(normalizedEmail).remove();
+        }
+
+        await userRef.remove();
+
+        return { success: true };
+    }
+
+    async deleteCurrentUserData() {
+        return this.deleteUserDataByUid(this.currentUserId, this.currentUserEmail);
     }
 
     normalizeEmail(email) {

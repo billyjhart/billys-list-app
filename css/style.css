@@ -139,6 +139,85 @@ body {
     font-size: 0.9rem;
 }
 
+.auth-error.auth-info {
+    background-color: #dbeafe;
+    border-color: #bfdbfe;
+    color: #1e3a8a;
+}
+
+.tos-box {
+    text-align: left;
+    margin: 6px 0 10px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    max-height: 180px;
+    overflow: auto;
+    background: #f8fafc;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+.tos-box h3 {
+    font-size: 0.9rem;
+    margin: 0 0 6px;
+    color: #1e293b;
+}
+
+.tos-box p {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.tos-box ul {
+    margin: 0 0 8px 18px;
+    padding: 0;
+}
+
+.tos-contact {
+    margin-bottom: 0;
+    font-weight: 600;
+}
+
+.tos-contact a {
+    color: #334155;
+}
+
+.tos-contact a:hover {
+    color: #1d4ed8;
+}
+
+.tos-agree-row {
+    display: grid;
+    grid-template-columns: 18px 1fr;
+    align-items: start;
+    column-gap: 12px;
+    text-align: left;
+    margin: 10px 0 10px;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: #334155;
+    cursor: pointer;
+}
+
+.tos-agree-row input {
+    margin-top: 3px;
+    width: 16px;
+    height: 16px;
+}
+
+#sign-up-email-btn {
+    margin-top: 4px;
+    margin-bottom: 8px;
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    filter: grayscale(0.15);
+}
+
 /* App Container */
 .app-container {
     min-height: 100vh;
@@ -239,13 +318,21 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 400px;
-    padding: 40px 20px;
+    min-height: 360px;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 20px 36px;
 }
 
 .empty-state {
     text-align: center;
-    max-width: 400px;
+    width: 100%;
+    max-width: 560px;
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 32px 24px;
 }
 
 .empty-state h3 {
@@ -256,8 +343,13 @@ body {
 
 .empty-state p {
     color: #6c757d;
-    margin-bottom: 30px;
+    margin-bottom: 24px;
     font-size: 1rem;
+}
+
+.empty-state .btn-primary {
+    display: inline-flex;
+    margin: 0 auto;
 }
 
 /* Active List Container */
@@ -706,6 +798,26 @@ body {
 .modal-actions button {
     flex: 1;
     min-width: 100px;
+}
+
+.terms-modal-content {
+    max-width: 560px;
+    text-align: left;
+}
+
+.terms-modal-content .modal-actions {
+    justify-content: flex-end;
+}
+
+.terms-version-label {
+    margin: -8px 0 10px;
+    font-size: 0.85rem;
+    color: #64748b;
+}
+
+.terms-modal-content .modal-actions button {
+    flex: 0 0 auto;
+    min-width: 140px;
 }
 
 /* Context Menus */
@@ -1201,6 +1313,40 @@ body {
     color: #cbd5e1 !important;
 }
 
+[data-theme="dark"] .empty-state {
+    background: #1a1f3a !important;
+    border-color: #2a2f4a !important;
+}
+
+[data-theme="dark"] .tos-box {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .tos-box h3,
+[data-theme="dark"] .tos-agree-row {
+    color: #e2e8f0 !important;
+}
+
+[data-theme="dark"] .tos-box p {
+    color: #cbd5e1 !important;
+}
+
+[data-theme="dark"] .auth-error.auth-info {
+    background: #1e3a8a !important;
+    border-color: #3b82f6 !important;
+    color: #dbeafe !important;
+}
+
+[data-theme="dark"] .terms-version-label {
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .tos-contact a {
+    color: #bfdbfe !important;
+}
+
 [data-theme="dark"] .list-tab {
     background: #0a0e27 !important;
     color: #cbd5e1 !important;
@@ -1502,6 +1648,32 @@ body {
 
 [data-theme="dark"] .share-user-row {
     border-bottom-color: #2a2f4a;
+}
+
+/* Shared row cleanup polish */
+.shared-meta-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.shared-meta-action {
+    white-space: nowrap;
+}
+
+.share-remove-btn {
+    min-width: 120px;
+}
+
+@media (max-width: 640px) {
+    .shared-meta-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .shared-meta-text {
+        white-space: normal;
+    }
 }
 
 

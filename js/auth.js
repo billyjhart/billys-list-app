@@ -21,6 +21,7 @@ class AuthManager {
         this.passwordInput = document.getElementById('password-input');
         this.signInEmailBtn = document.getElementById('sign-in-email-btn');
         this.forgotPasswordBtn = document.getElementById('forgot-password-btn');
+        this.resendVerificationBtn = document.getElementById('resend-verification-btn');
         this.toggleSignupBtn = document.getElementById('toggle-signup-btn');
         
         // Email sign-up
@@ -28,8 +29,16 @@ class AuthManager {
         this.signupEmailInput = document.getElementById('signup-email');
         this.signupPasswordInput = document.getElementById('signup-password');
         this.signupConfirmInput = document.getElementById('signup-confirm');
+        this.signupTermsAgreeInput = document.getElementById('signup-terms-agree');
         this.signUpEmailBtn = document.getElementById('sign-up-email-btn');
         this.toggleSigninBtn = document.getElementById('toggle-signin-btn');
+
+        // Terms modal (runtime TOU enforcement)
+        this.termsModal = document.getElementById('terms-modal');
+        this.termsModalAgreeInput = document.getElementById('terms-modal-agree');
+        this.termsAcceptBtn = document.getElementById('terms-accept-btn');
+        this.termsDeclineBtn = document.getElementById('terms-decline-btn');
+        this.termsVersionLabel = document.getElementById('terms-version-label');
         
         // Error display
         this.authError = document.getElementById('auth-error');
@@ -42,8 +51,15 @@ class AuthManager {
         this.accountPasswordBtn = document.getElementById('account-password-btn');
         this.accountSortDefaultsBtn = document.getElementById('account-sort-defaults-btn');
         this.themeModeBtn = document.getElementById('theme-mode-btn');
+        this.deleteAccountBtn = document.getElementById('delete-account-btn');
         this.signOutBtn = document.getElementById('sign-out-btn');
         this.listsHeading = document.getElementById('lists-heading');
+        this.lastSignInDispatch = { uid: null, at: 0 };
+        this.termsVersion = '2026-03-13';
+        this.termsCheckInProgress = false;
+        this.termsModalResolver = null;
+        this.suppressAuthStateHandling = false;
+        this.pendingAuthInfoMessage = null;
         
         this.initializeAuth();
     }
@@ -57,6 +73,9 @@ class AuthManager {
         
         this.signInEmailBtn.addEventListener('click', () => this.signInWithEmail());
         this.forgotPasswordBtn.addEventListener('click', () => this.sendPasswordReset());
+        if (this.resendVerificationBtn) {
+            this.resendVerificationBtn.addEventListener('click', () => this.resendVerificationEmail());
+        }
         this.emailInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.signInWithEmail();
         });
@@ -71,6 +90,20 @@ class AuthManager {
         this.signupPasswordInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') this.signUpWithEmail();
         });
+        this.signupConfirmInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.signUpWithEmail();
+        });
+        this.signupTermsAgreeInput.addEventListener('change', () => this.updateSignupButtonState());
+
+        if (this.termsModalAgreeInput) {
+            this.termsModalAgreeInput.addEventListener('change', () => this.updateTermsModalButtonState());
+        }
+        if (this.termsAcceptBtn) {
+            this.termsAcceptBtn.addEventListener('click', () => this.resolveTermsModal(true));
+        }
+        if (this.termsDeclineBtn) {
+            this.termsDeclineBtn.addEventListener('click', () => this.resolveTermsModal(false));
+        }
         
         // Header menu toggle
         this.appMenuBtn.addEventListener('click', (e) => {
@@ -89,6 +122,7 @@ class AuthManager {
                 window.billysListApp.uiManager.toggleTheme();
             }
         });
+        this.deleteAccountBtn.addEventListener('click', () => this.deleteAccount());
         this.signOutBtn.addEventListener('click', () => {
             this.hideAppMenu();
             this.signOut();
@@ -98,8 +132,13 @@ class AuthManager {
         document.addEventListener('click', () => this.hideAppMenu());
         this.appMenu.addEventListener('click', (e) => e.stopPropagation());
 
+        // Default signup button state (requires ToS agreement)
+        this.updateSignupButtonState();
+
         // Listen for auth state changes
         auth.onAuthStateChanged((user) => {
+            if (this.suppressAuthStateHandling) return;
+
             if (user) {
                 this.handleSignedIn(user);
             } else {
@@ -168,6 +207,38 @@ class AuthManager {
             this.signInEmailBtn.innerHTML = '<span class="btn-icon">⏳</span>Signing in...';
             
             const result = await auth.signInWithEmailAndPassword(email, password);
+
+            // Enforce email verification for email/password users.
+            await result.user.reload();
+            if (!result.user.emailVerified) {
+                try {
+                    await result.user.sendEmailVerification();
+                    console.log('Verification email send requested (sign-in gate):', {
+                        email,
+                        uid: result.user.uid,
+                        provider: result.user.providerData?.map(p => p.providerId)
+                    });
+                    this.showInfo(`Verification email requested for ${email} at ${new Date().toLocaleTimeString()}. If you don't see it, check spam/junk.`, true);
+                } catch (verifyError) {
+                    console.error('Verification email send failed (sign-in gate):', {
+                        code: verifyError.code,
+                        message: verifyError.message,
+                        email,
+                        uid: result.user.uid
+                    });
+                }
+
+                await auth.signOut();
+                this.showInfo('Please verify your email before signing in. Verification email request was submitted. If you don\'t see it, check spam/junk.', true);
+                return;
+            }
+
+            // Keep profile verification state in sync.
+            await database.ref(`users/${result.user.uid}/profile`).update({
+                emailVerified: true,
+                lastSeen: firebase.database.ServerValue.TIMESTAMP
+            }).catch(() => {});
+
             console.log('User signed in with email:', result.user.email);
             
             // Success - button will be hidden when app loads
@@ -210,6 +281,11 @@ class AuthManager {
             return;
         }
 
+        if (!this.signupTermsAgreeInput.checked) {
+            this.showError('Please review and agree to the Terms of Service to create your account.');
+            return;
+        }
+
         try {
             this.signUpEmailBtn.disabled = true;
             this.signUpEmailBtn.innerHTML = '<span class="btn-icon">⏳</span>Creating account...';
@@ -221,8 +297,48 @@ class AuthManager {
             await result.user.updateProfile({
                 displayName: name
             });
-            
-            console.log('User account created:', result.user.email);
+
+            // Ensure profile name is correct in RTDB immediately on first account creation.
+            // This prevents initial profile/name writes from temporarily using email fallback.
+            try {
+                const uid = result.user.uid;
+                await database.ref(`users/${uid}/profile`).update({
+                    name,
+                    email: result.user.email,
+                    photoURL: result.user.photoURL || null,
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                    termsAccepted: true,
+                    termsAcceptedAt: firebase.database.ServerValue.TIMESTAMP,
+                    termsVersion: this.termsVersion,
+                    emailVerified: !!result.user.emailVerified
+                });
+            } catch (profileWriteError) {
+                console.warn('Immediate profile name write failed after signup:', profileWriteError);
+            }
+
+            // Require email verification for email/password accounts.
+            try {
+                await result.user.sendEmailVerification();
+                console.log('Verification email send requested (signup):', {
+                    email,
+                    uid: result.user.uid,
+                    provider: result.user.providerData?.map(p => p.providerId)
+                });
+                this.showInfo(`Verification email requested for ${email} at ${new Date().toLocaleTimeString()}. If you don't see it, check spam/junk.`, true);
+            } catch (verifyError) {
+                console.error('Verification email send failed (signup):', {
+                    code: verifyError.code,
+                    message: verifyError.message,
+                    email,
+                    uid: result.user.uid
+                });
+                throw verifyError;
+            }
+
+            await auth.signOut();
+            alert(`Account created. We sent a verification email to ${email}. Please verify your email, then sign in. If you don't see it, check your spam/junk folder.`);
+
+            console.log('User account created (verification required):', result.user.email);
             
         } catch (error) {
             console.error('Email sign up error:', error);
@@ -239,6 +355,7 @@ class AuthManager {
         this.emailAuthForm.classList.remove('active');
         this.emailSignupForm.classList.add('active');
         this.hideError();
+        this.updateSignupButtonState();
         this.signupNameInput.focus();
     }
 
@@ -246,6 +363,7 @@ class AuthManager {
         this.emailAuthForm.classList.add('active');
         this.emailSignupForm.classList.remove('active');
         this.hideError();
+        this.updateSignupButtonState();
         this.emailInput.focus();
     }
 
@@ -281,6 +399,69 @@ class AuthManager {
         }
     }
 
+    async resendVerificationEmail() {
+        const email = this.emailInput.value.trim();
+        const password = this.passwordInput.value;
+
+        if (!email || !password) {
+            this.showError('Enter your email and password, then tap "Resend verification email".');
+            return;
+        }
+
+        if (!this.isValidEmail(email)) {
+            this.showError('Please enter a valid email address');
+            return;
+        }
+
+        const originalText = this.resendVerificationBtn ? this.resendVerificationBtn.innerHTML : '';
+
+        try {
+            if (this.resendVerificationBtn) {
+                this.resendVerificationBtn.disabled = true;
+                this.resendVerificationBtn.textContent = 'Sending...';
+            }
+
+            this.suppressAuthStateHandling = true;
+            const result = await auth.signInWithEmailAndPassword(email, password);
+            await result.user.reload();
+
+            if (result.user.emailVerified) {
+                alert('This email is already verified. You can sign in now.');
+            } else {
+                try {
+                    await result.user.sendEmailVerification();
+                    console.log('Verification email send requested (manual resend):', {
+                        email,
+                        uid: result.user.uid,
+                        provider: result.user.providerData?.map(p => p.providerId)
+                    });
+                    this.showInfo(`Verification email requested for ${email} at ${new Date().toLocaleTimeString()}. If you don't see it, check spam/junk.`, true);
+                    alert(`Verification email sent to ${email}. Please verify, then sign in. If you don't see it, check your spam/junk folder.`);
+                } catch (verifyError) {
+                    console.error('Verification email send failed (manual resend):', {
+                        code: verifyError.code,
+                        message: verifyError.message,
+                        email,
+                        uid: result.user.uid
+                    });
+                    this.showError(`Could not send verification email (${verifyError.code || 'unknown-error'}).`);
+                }
+            }
+
+            await auth.signOut();
+            this.hideError();
+        } catch (error) {
+            console.error('Resend verification error:', error);
+            this.showError(this.getErrorMessage(error));
+        } finally {
+            this.suppressAuthStateHandling = false;
+            if (this.resendVerificationBtn) {
+                this.resendVerificationBtn.disabled = false;
+                this.resendVerificationBtn.innerHTML = originalText || 'Resend verification email';
+            }
+        }
+    }
+
     async updateDisplayName() {
         this.hideAppMenu();
         if (!this.currentUser) return;
@@ -292,8 +473,9 @@ class AuthManager {
         try {
             await this.currentUser.updateProfile({ displayName: newName.trim() });
 
-            if (window.billysListApp && window.billysListApp.databaseManager) {
-                await window.billysListApp.databaseManager.setCurrentUser(this.currentUser);
+            const dbManager = window.BillysListApp?.databaseManager || window.billysListApp?.databaseManager || window.billysListApp?.database;
+            if (dbManager) {
+                await dbManager.setCurrentUser(this.currentUser);
             }
 
             this.updateListsHeading();
@@ -359,15 +541,165 @@ class AuthManager {
         }
     }
 
+    async deleteAccount() {
+        this.hideAppMenu();
+        if (!this.currentUser) return;
+
+        const firstConfirm = confirm('Delete your account permanently? This will remove your profile and all lists you own.');
+        if (!firstConfirm) return;
+
+        // Check recency before requiring typed confirmation.
+        const lastSignInMs = new Date(this.currentUser.metadata?.lastSignInTime || 0).getTime();
+        if (!lastSignInMs || (Date.now() - lastSignInMs) > (15 * 60 * 1000)) {
+            alert('For security, please sign out and sign back in, then try Delete Account again.');
+            return;
+        }
+
+        const typed = prompt('Type DELETE to confirm account deletion:');
+        if (typed !== 'DELETE') {
+            alert('Account deletion canceled.');
+            return;
+        }
+
+        const originalDeleteText = this.deleteAccountBtn.innerHTML;
+
+        try {
+            this.deleteAccountBtn.disabled = true;
+            this.deleteAccountBtn.innerHTML = '⏳ Deleting account...';
+
+            const dbManager = window.BillysListApp?.databaseManager || window.billysListApp?.databaseManager || window.billysListApp?.database;
+            if (!dbManager) {
+                throw new Error('Account deletion failed: database manager not available');
+            }
+
+            const deleteUid = this.currentUser.uid;
+            const deleteEmail = this.currentUser.email;
+
+            if (typeof dbManager.deleteUserDataByUid === 'function') {
+                await dbManager.deleteUserDataByUid(deleteUid, deleteEmail);
+            } else {
+                await dbManager.deleteCurrentUserData();
+            }
+
+            await this.currentUser.delete();
+            await auth.signOut().catch(() => {});
+            alert('Your account has been deleted.');
+        } catch (error) {
+            console.error('Delete account error:', error);
+            if ((error.code || '').includes('requires-recent-login')) {
+                alert('For security, please sign out and sign back in, then try deleting your account again.');
+            } else {
+                this.showError(this.getErrorMessage(error));
+            }
+        } finally {
+            this.deleteAccountBtn.disabled = false;
+            this.deleteAccountBtn.innerHTML = originalDeleteText;
+        }
+    }
+
     updateListsHeading() {
         if (!this.listsHeading) return;
         const name = (this.currentUser && (this.currentUser.displayName || this.currentUser.email)) || 'My';
         this.listsHeading.textContent = `${name} - My Lists`;
     }
 
+    async isTermsAccepted(user) {
+        try {
+            const profileSnap = await database.ref(`users/${user.uid}/profile`).once('value');
+            if (!profileSnap.exists()) return false;
+            const profile = profileSnap.val() || {};
+            return profile.termsAccepted === true && profile.termsVersion === this.termsVersion;
+        } catch (error) {
+            console.warn('Failed checking terms acceptance:', error);
+            return false;
+        }
+    }
+
+    async recordTermsAcceptance(user) {
+        await database.ref(`users/${user.uid}/profile`).update({
+            termsAccepted: true,
+            termsAcceptedAt: firebase.database.ServerValue.TIMESTAMP,
+            termsVersion: this.termsVersion,
+            email: user.email || null,
+            name: user.displayName || user.email || 'User',
+            lastSeen: firebase.database.ServerValue.TIMESTAMP
+        });
+    }
+
+    updateTermsModalButtonState() {
+        if (!this.termsAcceptBtn || !this.termsModalAgreeInput) return;
+        this.termsAcceptBtn.disabled = !this.termsModalAgreeInput.checked;
+    }
+
+    showTermsModal() {
+        if (!this.termsModal) {
+            // Fallback safety if markup is missing
+            return Promise.resolve(confirm('Accept Terms of Service to continue?'));
+        }
+
+        if (this.termsVersionLabel) {
+            this.termsVersionLabel.textContent = `Version: ${this.termsVersion}`;
+        }
+
+        this.termsModalAgreeInput.checked = false;
+        this.updateTermsModalButtonState();
+        this.termsModal.style.display = 'flex';
+
+        return new Promise((resolve) => {
+            this.termsModalResolver = resolve;
+        });
+    }
+
+    resolveTermsModal(accepted) {
+        if (this.termsModal) {
+            this.termsModal.style.display = 'none';
+        }
+
+        if (this.termsModalResolver) {
+            const resolver = this.termsModalResolver;
+            this.termsModalResolver = null;
+            resolver(accepted);
+        }
+    }
+
+    async ensureTermsAccepted(user) {
+        if (await this.isTermsAccepted(user)) return true;
+
+        const accepted = await this.showTermsModal();
+
+        if (!accepted) {
+            await auth.signOut().catch(() => {});
+            return false;
+        }
+
+        await this.recordTermsAcceptance(user);
+        return true;
+    }
+
     // Handle signed in state
-    handleSignedIn(user) {
-        this.currentUser = user;
+    async handleSignedIn(user) {
+        if (this.termsCheckInProgress) return;
+
+        let resolvedUser = user;
+
+        // Firebase may initially provide an auth object without the just-updated displayName.
+        // Reload to get the latest profile so heading/UI use the correct name immediately.
+        try {
+            await user.reload();
+            resolvedUser = auth.currentUser || user;
+        } catch (error) {
+            console.warn('User reload failed during sign-in state handling:', error);
+        }
+
+        this.termsCheckInProgress = true;
+        try {
+            const hasAcceptedTerms = await this.ensureTermsAccepted(resolvedUser);
+            if (!hasAcceptedTerms) return;
+        } finally {
+            this.termsCheckInProgress = false;
+        }
+
+        this.currentUser = resolvedUser;
         this.hideAppMenu();
         
         // Show app, hide auth
@@ -376,17 +708,30 @@ class AuthManager {
         
         this.updateListsHeading();
 
+        // Prevent duplicate burst dispatches for the same user (can duplicate UI event bindings).
+        const now = Date.now();
+        if (
+            this.lastSignInDispatch.uid === resolvedUser.uid &&
+            (now - this.lastSignInDispatch.at) < 2000
+        ) {
+            console.log('Skipping duplicate user-signed-in dispatch for', resolvedUser.email);
+            return;
+        }
+        this.lastSignInDispatch = { uid: resolvedUser.uid, at: now };
+
         // Dispatch user signed in event for the main app to handle
         window.dispatchEvent(new CustomEvent('user-signed-in', { 
-            detail: { user } 
+            detail: { user: resolvedUser } 
         }));
         
-        console.log('User authenticated:', user.displayName || user.email);
+        console.log('User authenticated:', resolvedUser.displayName || resolvedUser.email);
     }
 
     // Handle signed out state
     handleSignedOut() {
         this.currentUser = null;
+        this.termsCheckInProgress = false;
+        this.resolveTermsModal(false);
         this.hideAppMenu();
         
         // Show auth, hide app
@@ -395,6 +740,12 @@ class AuthManager {
         
         // Reset forms
         this.resetAuthForms();
+
+        // Restore pending informational message (e.g., verification email request) after sign-out reset.
+        if (this.pendingAuthInfoMessage) {
+            this.showInfo(this.pendingAuthInfoMessage, false);
+            this.pendingAuthInfoMessage = null;
+        }
         
         // Reset sign-in button
         this.signInGoogleBtn.disabled = false;
@@ -423,16 +774,40 @@ class AuthManager {
         this.signupEmailInput.value = '';
         this.signupPasswordInput.value = '';
         this.signupConfirmInput.value = '';
+        this.signupTermsAgreeInput.checked = false;
+        this.updateSignupButtonState();
         this.hideError();
     }
 
-    // Error handling
+    updateSignupButtonState() {
+        const onSignupForm = this.emailSignupForm.classList.contains('active');
+        if (!onSignupForm) {
+            this.signUpEmailBtn.disabled = false;
+            return;
+        }
+
+        this.signUpEmailBtn.disabled = !this.signupTermsAgreeInput.checked;
+    }
+
+    // Error/info handling
     showError(message) {
+        this.authError.classList.remove('auth-info');
         this.authError.textContent = message;
         this.authError.style.display = 'block';
     }
 
+    showInfo(message, persistAfterSignOut = false) {
+        this.authError.classList.add('auth-info');
+        this.authError.textContent = message;
+        this.authError.style.display = 'block';
+
+        if (persistAfterSignOut) {
+            this.pendingAuthInfoMessage = message;
+        }
+    }
+
     hideError() {
+        this.authError.classList.remove('auth-info');
         this.authError.style.display = 'none';
         this.authError.textContent = '';
     }
