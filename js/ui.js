@@ -17,6 +17,14 @@ class UIManager {
         this.appSection = document.getElementById('app-section');
         this.noListSelected = document.getElementById('no-list-selected');
         this.activeListContainer = document.getElementById('active-list-container');
+
+        // PDF export
+        this.exportPdfBtn = document.getElementById('export-pdf-btn');
+        this.exportPdfModal = document.getElementById('export-pdf-modal');
+        this.exportListsContainer = document.getElementById('export-lists-container');
+        this.exportSelectAllLists = document.getElementById('export-select-all-lists');
+        this.exportPdfConfirm = document.getElementById('export-pdf-confirm');
+        this.exportPdfCancel = document.getElementById('export-pdf-cancel');
     }
 
     initializeEventListeners() {
@@ -33,6 +41,25 @@ class UIManager {
         const themeToggle = document.getElementById('theme-toggle');
         if (themeToggle) {
             themeToggle.addEventListener('click', () => this.toggleTheme());
+        }
+
+        // PDF export controls
+        if (this.exportPdfBtn) {
+            this.exportPdfBtn.addEventListener('click', () => this.openExportPdfModal());
+        }
+        if (this.exportPdfCancel) {
+            this.exportPdfCancel.addEventListener('click', () => this.closeExportPdfModal());
+        }
+        if (this.exportPdfConfirm) {
+            this.exportPdfConfirm.addEventListener('click', () => this.generatePdfExport());
+        }
+        if (this.exportSelectAllLists) {
+            this.exportSelectAllLists.addEventListener('change', () => this.toggleSelectAllExportLists());
+        }
+        if (this.exportPdfModal) {
+            this.exportPdfModal.addEventListener('click', (e) => {
+                if (e.target === this.exportPdfModal) this.closeExportPdfModal();
+            });
         }
     }
 
@@ -104,6 +131,176 @@ class UIManager {
             initializeWithUser: (user) => this.initializeWithUser(user),
             cleanup: () => this.cleanup()
         };
+    }
+
+    openExportPdfModal() {
+        if (window.BillysListApp?.authManager?.hideAppMenu) {
+            window.BillysListApp.authManager.hideAppMenu();
+        }
+
+        if (!this.isInitialized || !this.listsManager) {
+            this.showError('Please wait for your lists to load, then try again.');
+            return;
+        }
+
+        const allLists = [
+            ...(this.listsManager.userLists?.owned || []).map(list => ({ ...list, listType: 'owned' })),
+            ...(this.listsManager.userLists?.shared || []).map(list => ({ ...list, listType: 'shared' }))
+        ];
+
+        if (allLists.length === 0) {
+            this.showError('No lists available to export yet.');
+            return;
+        }
+
+        this.exportListsContainer.innerHTML = allLists.map(list => `
+            <label class="target-list-item export-list-item">
+                <input type="checkbox" class="export-list-checkbox" value="${list.id}" checked>
+                <span>${list.name}${list.listType === 'shared' ? ' (shared)' : ''}</span>
+            </label>
+        `).join('');
+
+        this.exportSelectAllLists.checked = true;
+        this.exportPdfModal.style.display = 'flex';
+    }
+
+    closeExportPdfModal() {
+        if (this.exportPdfModal) {
+            this.exportPdfModal.style.display = 'none';
+        }
+    }
+
+    toggleSelectAllExportLists() {
+        const checked = !!this.exportSelectAllLists.checked;
+        const boxes = this.exportListsContainer.querySelectorAll('.export-list-checkbox');
+        boxes.forEach(box => {
+            box.checked = checked;
+        });
+    }
+
+    getExportItemFilter() {
+        const selected = document.querySelector('input[name="export-item-filter"]:checked');
+        return selected ? selected.value : 'both';
+    }
+
+    async generatePdfExport() {
+        if (!window.jspdf || typeof window.jspdf.jsPDF !== 'function') {
+            this.showError('PDF library failed to load. Refresh and try again.');
+            return;
+        }
+
+        const selectedListIds = Array.from(this.exportListsContainer.querySelectorAll('.export-list-checkbox:checked'))
+            .map(box => box.value);
+
+        if (selectedListIds.length === 0) {
+            this.showError('Select at least one list to export.');
+            return;
+        }
+
+        const allLists = [
+            ...(this.listsManager.userLists?.owned || []),
+            ...(this.listsManager.userLists?.shared || [])
+        ];
+        const selectedLists = allLists.filter(list => selectedListIds.includes(list.id));
+        const filterMode = this.getExportItemFilter();
+
+        const originalBtnText = this.exportPdfConfirm.textContent;
+        this.exportPdfConfirm.disabled = true;
+        this.exportPdfConfirm.textContent = 'Generating...';
+
+        try {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+
+            if (typeof doc.autoTable !== 'function') {
+                throw new Error('jsPDF AutoTable plugin not available');
+            }
+
+            doc.setFontSize(18);
+            doc.text("Billy's List App", 40, 44);
+            doc.setFontSize(11);
+            doc.text(`Exported: ${new Date().toLocaleString()}`, 40, 62);
+            doc.text(`Lists selected: ${selectedLists.length} | Filter: ${filterMode}`, 40, 78);
+
+            // Render first list on page 1 under summary header; subsequent lists on new pages.
+            let isFirstListPage = true;
+            for (const list of selectedLists) {
+                const items = await this.database.getListItems(list.id);
+                const unchecked = (items.unchecked || []).map(item => item.name);
+                const checked = (items.checked || []).map(item => item.name);
+
+                if (!isFirstListPage) {
+                    doc.addPage();
+                }
+
+                const headerY = isFirstListPage ? 112 : 44;
+                const metaY = isFirstListPage ? 130 : 62;
+
+                doc.setFontSize(15);
+                doc.text(list.name || 'Untitled List', 40, headerY);
+                doc.setFontSize(10);
+                doc.text(`Unchecked: ${unchecked.length} | Checked: ${checked.length}`, 40, metaY);
+
+                let cursorY = isFirstListPage ? 146 : 78;
+                const addSection = (title, rows, marker) => {
+                    doc.setFontSize(12);
+                    doc.text(title, 40, cursorY);
+                    cursorY += 8;
+
+                    if (!rows.length) {
+                        doc.setFontSize(10);
+                        doc.text('None', 48, cursorY + 12);
+                        cursorY += 26;
+                        return;
+                    }
+
+                    doc.autoTable({
+                        startY: cursorY,
+                        head: [['Status', 'Item']],
+                        body: rows.map(name => [marker, name]),
+                        theme: 'striped',
+                        margin: { left: 40, right: 40 },
+                        styles: { fontSize: 10, cellPadding: 5, overflow: 'linebreak' },
+                        headStyles: { fillColor: [37, 99, 235] },
+                        columnStyles: {
+                            0: { cellWidth: 95, halign: 'center' },
+                            1: { cellWidth: 'auto' }
+                        }
+                    });
+
+                    cursorY = (doc.lastAutoTable && doc.lastAutoTable.finalY ? doc.lastAutoTable.finalY : cursorY) + 14;
+                };
+
+                if (filterMode === 'both' || filterMode === 'unchecked') {
+                    addSection('Unchecked Items', unchecked, '[ ]');
+                }
+
+                if (filterMode === 'both' || filterMode === 'checked') {
+                    addSection('Checked Items', checked, '[x]');
+                }
+
+                isFirstListPage = false;
+            }
+
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(9);
+                doc.text(`Page ${i} of ${pageCount}`, 40, 760);
+            }
+
+            const date = new Date();
+            const stamp = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            doc.save(`billys-list-export-${stamp}.pdf`);
+
+            this.closeExportPdfModal();
+        } catch (error) {
+            console.error('PDF export failed:', error);
+            this.showError('Failed to generate PDF. Please try again.');
+        } finally {
+            this.exportPdfConfirm.disabled = false;
+            this.exportPdfConfirm.textContent = originalBtnText;
+        }
     }
 
     // Handle keyboard shortcuts

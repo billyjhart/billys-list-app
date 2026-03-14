@@ -114,6 +114,7 @@
                     <button id="account-password-btn" class="menu-item menu-button">🔒 Update Password</button>
                     <button id="account-sort-defaults-btn" class="menu-item menu-button">↕️ Sorting Preferences</button>
                     <button id="theme-mode-btn" class="menu-item menu-button">🌓 Toggle Dark/Light Mode</button>
+                    <button id="export-pdf-btn" class="menu-item menu-button">🖨️ Export Lists to PDF</button>
                     <button id="delete-account-btn" class="menu-item menu-button danger">🗑️ Delete Account</button>
                     <button id="sign-out-btn" class="menu-item menu-button">Sign Out</button>
                 </div>
@@ -230,6 +231,32 @@
         </div>
     </div>
 
+    <!-- Export PDF Modal -->
+    <div id="export-pdf-modal" class="modal" style="display: none;">
+        <div class="modal-content export-pdf-modal-content">
+            <h3>Export Lists to PDF</h3>
+            <p>Select one or more lists and choose which items to include.</p>
+
+            <div class="export-controls">
+                <label><input type="checkbox" id="export-select-all-lists"> Select all lists</label>
+            </div>
+
+            <div id="export-lists-container" class="target-lists"></div>
+
+            <div class="export-filter-group">
+                <p>Include items:</p>
+                <label><input type="radio" name="export-item-filter" value="both" checked> Unchecked + Checked</label>
+                <label><input type="radio" name="export-item-filter" value="unchecked"> Unchecked only</label>
+                <label><input type="radio" name="export-item-filter" value="checked"> Checked only</label>
+            </div>
+
+            <div class="modal-actions">
+                <button id="export-pdf-confirm" class="btn-primary">Generate PDF</button>
+                <button id="export-pdf-cancel" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Create List Modal -->
     <div id="create-list-modal" class="modal" style="display: none;">
         <div class="modal-content">
@@ -320,6 +347,10 @@
     <!-- Firebase Configuration -->
     <script src="js/firebase-config.js"></script>
     
+    <!-- PDF Export Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+
     <!-- App Scripts -->
     <script src="js/auth.js"></script>
     <script src="js/database.js"></script>
